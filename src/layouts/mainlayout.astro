@@ -1,0 +1,88 @@
+---
+import Navbar from "../components/navbar.astro";
+import Footer from "../components/footer.astro";
+import "../styles/global.css";
+
+const { title = "Job Portal" } = Astro.props;
+---
+
+<html>
+  <head>
+    <title>{title}</title>
+  </head>
+
+  <body class="bg-linear-to-r from-blue-500 to-blue-400 min-h-screen">
+    <!-- Sticky navbar -->
+    <div id="site-navbar" class="sticky top-0 z-50 px-4">
+      <Navbar />
+    </div>
+
+    <!-- Wrapper hero -->
+    <div class="px-4 bg-linear-to-r from-blue-500 to-blue-400 pb-20">
+      <slot name="hero" />
+    </div>
+
+    <!-- Content -->
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script is:inline>
+      (() => {
+        const navbar = document.getElementById("site-navbar");
+        if (!navbar) return;
+
+        const HIDDEN_CLASS = "navbar-hidden";
+        const SCROLLED_ATTR = "data-scrolled";
+        const MIN_Y_TO_HIDE = 64;
+        const DELTA_THRESHOLD = 6;
+
+        let lastY = window.scrollY || 0;
+        let ticking = false;
+
+        const setHidden = (hidden) => {
+          navbar.classList.toggle(HIDDEN_CLASS, hidden);
+          if (hidden) navbar.setAttribute("aria-hidden", "true");
+          else navbar.removeAttribute("aria-hidden");
+        };
+
+        const update = () => {
+          const y = window.scrollY || 0;
+          const delta = y - lastY;
+
+          if (y > 0) navbar.setAttribute(SCROLLED_ATTR, "true");
+          else navbar.removeAttribute(SCROLLED_ATTR);
+
+          if (y <= 0) {
+            setHidden(false);
+            lastY = y;
+            return;
+          }
+
+          if (Math.abs(delta) >= DELTA_THRESHOLD) {
+            if (delta > 0 && y > MIN_Y_TO_HIDE) setHidden(true);
+            if (delta < 0) setHidden(false);
+          }
+
+          lastY = y;
+        };
+
+        const onScroll = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            update();
+            ticking = false;
+          });
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+
+        // Initialize state (e.g. when landing mid-page)
+        update();
+      })();
+    </script>
+  </body>
+</html>

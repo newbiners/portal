@@ -1,0 +1,335 @@
+---
+import MainLayout from "../layouts/mainlayout.astro";
+import Hero from "../components/hero.astro";
+import JobCard from "../components/jobcard.astro";
+import { getJobs } from "../services/jobService";
+import { ClipboardList } from "lucide-astro";
+
+type JobPosting = {
+  _id: string;
+  title?: string;
+  slug?: string;
+  summary?: string;
+  description?: string;
+  transaction_status?: number | string;
+};
+
+const response = await getJobs();
+
+const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
+  (job: JobPosting) => Number(job.transaction_status) === 100,
+);
+---
+
+<MainLayout title="Jobs">
+  <!-- hero -->
+  <Hero
+    slot="hero"
+    showSearch={false}
+    title="Join Our Tech Team"
+    subtitle="Build the future of technology with innovative projects and cutting edge solutions"
+  />
+
+  <!-- ================= JOB SECTION ================= -->
+  <section class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10">
+    <div class="w-[90%] max-w-7xl mx-auto">
+      <!-- Floating Badge -->
+      <button
+        type="button"
+        id="applicationTrackingButton"
+        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-lg border border-gray-100 px-7 py-4 flex items-center gap-4 z-20 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        data-reveal
+        data-reveal-delay="0"
+      >
+        <div
+          class="w-5 h-5 rounded-xl bg-gray-100 flex items-center justify-center"
+        >
+          <ClipboardList class="text-gray-700" size={26} />
+        </div>
+
+        <div>
+          <p
+            class="text-gray-900 font-semibold text-lg capitalize leading-none"
+          >
+            application
+          </p>
+          <p class="mt-1 text-xs text-gray-500">Click to track stage</p>
+        </div>
+      </button>
+
+      <!-- Heading -->
+      <div class="mb-6 space-y-2" data-reveal data-reveal-delay="70">
+        <h2 class="text-2xl font-bold text-slate-900">Open Positions</h2>
+      </div>
+
+      <!-- ================= JOB LIST ================= -->
+      <div class="flex flex-col gap-4" data-job-reveal-group>
+        {
+          jobs.length === 0 ? (
+            <p class="text-slate-500" data-reveal data-reveal-delay="120">
+              job vacancies are still not available.
+            </p>
+          ) : (
+            jobs.map((job: JobPosting) => (
+              <div data-reveal data-job-reveal-item>
+                <JobCard
+                  id={job._id}
+                  title={job.title}
+                  slug={job.slug}
+                  summary={job.summary}
+                  description={job.description}
+                />
+              </div>
+            ))
+          )
+        }
+      </div>
+    </div>
+
+    <!-- Tracking Modal -->
+    <div
+      id="applicationTrackingModal"
+      class="fixed inset-0 z-50 hidden items-center justify-center px-4"
+      aria-hidden="true"
+    >
+      <div
+        class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        data-modal-backdrop
+      >
+      </div>
+
+      <div class="relative w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p
+              class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-500"
+            >
+              Application Tracking
+            </p>
+            <h3 class="mt-2 text-2xl font-bold text-slate-900">
+              Paste Application ID to Start Tracking
+            </h3>
+            <p class="mt-2 text-sm text-slate-500">
+              Enter the application ID you received so the stage application can
+              be opened from here.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="closeTrackingModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Tutup pop up"
+          >
+            <span class="text-2xl leading-none">&times;</span>
+          </button>
+        </div>
+
+        <form id="trackingForm" class="mt-6 space-y-4">
+          <div>
+            <label
+              for="trackingUrl"
+              class="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Application ID
+            </label>
+            <input
+              id="trackingUrl"
+              name="trackingUrl"
+              type="text"
+              inputmode="text"
+              placeholder="Paste application ID here"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+              required
+            />
+          </div>
+
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              id="cancelTrackingModal"
+              class="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-full bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-600"
+            >
+              Start Tracking
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  // @ts-nocheck
+  document.addEventListener("DOMContentLoaded", () => {
+    const trackingButton = document.querySelector("#applicationTrackingButton");
+    const trackingModal = document.querySelector("#applicationTrackingModal");
+    const trackingForm = document.querySelector("#trackingForm");
+    const trackingUrlInput = document.querySelector("#trackingUrl");
+    const closeTrackingModal = document.querySelector("#closeTrackingModal");
+    const cancelTrackingModal = document.querySelector("#cancelTrackingModal");
+
+    if (
+      !trackingButton ||
+      !trackingModal ||
+      !trackingForm ||
+      !trackingUrlInput
+    ) {
+      return;
+    }
+
+    const modalElement = trackingModal;
+    const formElement = trackingForm;
+    const urlInputElement = trackingUrlInput;
+    const backdropElement = modalElement.querySelector("[data-modal-backdrop]");
+
+    const openModal = () => {
+      modalElement.classList.remove("hidden");
+      modalElement.classList.add("flex");
+      modalElement.setAttribute("aria-hidden", "false");
+      window.setTimeout(() => urlInputElement.focus(), 0);
+    };
+
+    const closeModal = () => {
+      modalElement.classList.add("hidden");
+      modalElement.classList.remove("flex");
+      modalElement.setAttribute("aria-hidden", "true");
+      urlInputElement.setCustomValidity("");
+      formElement.reset();
+    };
+
+    const normalizeApplicationId = (value) => {
+      const raw = String(value || "").trim();
+      if (!raw) return null;
+
+      if (/^[A-Za-z0-9_-]+$/.test(raw)) {
+        return raw;
+      }
+
+      try {
+        const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw)
+          ? raw
+          : `https://${raw}`;
+        const parsedUrl = new URL(withProtocol);
+        const segments = parsedUrl.pathname.split("/").filter(Boolean);
+        const candidate =
+          segments[segments.length - 1] ||
+          parsedUrl.searchParams.get("application_id") ||
+          "";
+
+        return String(candidate).trim() || null;
+      } catch {
+        const cleaned = raw.replace(/[?#].*$/, "").replace(/^\/+|\/+$/g, "");
+        const segments = cleaned.split("/").filter(Boolean);
+        return segments[segments.length - 1] || null;
+      }
+    };
+
+    trackingButton.addEventListener("click", openModal);
+    closeTrackingModal?.addEventListener("click", closeModal);
+    cancelTrackingModal?.addEventListener("click", closeModal);
+
+    backdropElement?.addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        !modalElement.classList.contains("hidden")
+      ) {
+        closeModal();
+      }
+    });
+
+    urlInputElement.addEventListener("input", () => {
+      urlInputElement.setCustomValidity("");
+    });
+
+    formElement.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const applicationId = normalizeApplicationId(urlInputElement.value);
+
+      if (!applicationId) {
+        urlInputElement.setCustomValidity(
+          "Masukkan application ID yang valid.",
+        );
+        urlInputElement.reportValidity();
+        return;
+      }
+
+      urlInputElement.setCustomValidity("");
+      window.location.href = `/stage/${encodeURIComponent(applicationId)}`;
+    });
+  });
+</script>
+
+<script>
+  // @ts-nocheck
+  document.addEventListener("DOMContentLoaded", () => {
+    const singleRevealItems = Array.from(
+      document.querySelectorAll("[data-reveal]:not([data-job-reveal-item])"),
+    );
+    const group = document.querySelector("[data-job-reveal-group]");
+    const items = group
+      ? Array.from(group.querySelectorAll("[data-job-reveal-item]"))
+      : [];
+
+    if (!singleRevealItems.length && !group) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      singleRevealItems.forEach((item) => item.classList.add("is-visible"));
+      items.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+
+    singleRevealItems.forEach((item) => {
+      const delay = Number(item.getAttribute("data-reveal-delay") || 0);
+      item.style.transitionDelay = `${delay}ms`;
+    });
+
+    const singleObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          singleObserver.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    singleRevealItems.forEach((item) => singleObserver.observe(item));
+
+    if (!group || !items.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const stagger = 130;
+          items.forEach((item, index) => {
+            const delay = index * stagger;
+            item.style.transitionDelay = `${delay}ms`;
+            requestAnimationFrame(() => item.classList.add("is-visible"));
+          });
+
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    observer.observe(group);
+  });
+</script>

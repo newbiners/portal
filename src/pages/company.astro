@@ -1,0 +1,185 @@
+---
+import Layout from "../layouts/mainlayout.astro";
+import Hero from "../components/hero.astro";
+---
+
+<Layout title="Company">
+  <!-- hero -->
+  <Hero
+    slot="hero"
+    showSearch={false}
+    title="About Tim Teknologi"
+    subtitle="Connecting talented developers with innovative companies across the globe"
+  />
+
+  <!-- OUR STORY -->
+  <section
+    class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10"
+    data-reveal
+    data-reveal-delay="0"
+  >
+    <div class="w-[90%] mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <!-- Text -->
+      <div data-reveal data-reveal-delay="80">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Our Story</h2>
+
+        <p class="text-gray-600 mb-4 leading-relaxed">
+          Lorem ipsum dolor sit amet consectetur. Nibh est ullamcorper leo
+          interdum. Justo eu arcu vitae nascetur.
+        </p>
+
+        <p class="text-gray-600 leading-relaxed">
+          Risus ullamcorper risus nunc aliquet aliquet mi. Pretium in viverra
+          lacus dignissim non at congue amet.
+        </p>
+      </div>
+
+      <!-- Image -->
+      <div data-reveal data-reveal-delay="160">
+        <img
+          src="/images/company.png"
+          alt="Company"
+          class="rounded-2xl shadow-md w-full"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="bg-gray-100 py-16 text-center">
+    <h2
+      class="text-3xl font-bold text-gray-800"
+      data-reveal
+      data-reveal-delay="40"
+    >
+      Meet Our Team
+    </h2>
+
+    <p
+      class="text-gray-500 mt-2 max-w-xl mx-auto"
+      data-reveal
+      data-reveal-delay="100"
+    >
+      A diverse group of passionate professionals dedicated to revolutionizing
+      tech recruitment.
+    </p>
+
+    <!-- TEAM GRID -->
+    <div
+      class="w-[90%] mx-auto mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-10"
+      data-reveal-group
+    >
+      <!-- Member -->
+      <div data-reveal data-reveal-member>
+        <img
+          src="/images/img.png"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Alex Chen</h3>
+        <p class="text-blue-500 text-sm">CEO & Founder</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Former Google engineer with 10+ years in tech recruitment
+        </p>
+      </div>
+
+      <div data-reveal data-reveal-member>
+        <img
+          src="/images/img (2).png"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Sarah Johnson</h3>
+        <p class="text-blue-500 text-sm">CTO</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Full-stack developer and AI specialist
+        </p>
+      </div>
+
+      <div data-reveal data-reveal-member>
+        <img
+          src="/images/img (3).png"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">David Rodriguez</h3>
+        <p class="text-blue-500 text-sm">Head of Product</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Product strategist with experience at Uber & Airbnb
+        </p>
+      </div>
+
+      <div data-reveal data-reveal-member>
+        <img
+          src="/images/img (1).png"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Emma Wilson</h3>
+        <p class="text-blue-500 text-sm">Head of Design</p>
+        <p class="text-gray-500 text-sm mt-2">
+          UX designer passionate about intuitive experiences
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const singleReveal = Array.from(
+        document.querySelectorAll("[data-reveal]:not([data-reveal-member])"),
+      );
+      const groups = Array.from(
+        document.querySelectorAll("[data-reveal-group]"),
+      );
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        singleReveal.forEach((item) => item.classList.add("is-visible"));
+        groups.forEach((g) => {
+          const members = Array.from(
+            g.querySelectorAll("[data-reveal-member]"),
+          );
+          members.forEach((m) => m.classList.add("is-visible"));
+        });
+        return;
+      }
+
+      singleReveal.forEach((item) => {
+        const delay = Number(item.getAttribute("data-reveal-delay") || 0);
+        item.style.transitionDelay = `${delay}ms`;
+      });
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            const target = entry.target;
+            if (target.hasAttribute("data-reveal-group")) {
+              const members = Array.from(
+                target.querySelectorAll("[data-reveal-member]"),
+              );
+              const stagger = 120;
+              members.forEach((m, idx) => {
+                // set transition delay so CSS transition staggers too
+                m.style.transitionDelay = `${idx * stagger}ms`;
+                setTimeout(() => m.classList.add("is-visible"), idx * stagger);
+              });
+              observer.unobserve(target);
+              return;
+            }
+
+            const delay = Number(target.getAttribute("data-reveal-delay") || 0);
+            target.style.transitionDelay = `${delay}ms`;
+            target.classList.add("is-visible");
+            observer.unobserve(target);
+          });
+        },
+        { threshold: 0.18, rootMargin: "0px 0px -10% 0px" },
+      );
+
+      singleReveal.forEach((item) => observer.observe(item));
+      groups.forEach((g) => observer.observe(g));
+    })();
+  </script>
+</Layout>

@@ -1,0 +1,107 @@
+---
+import { Search } from "lucide-astro";
+
+interface Props {
+  showSearch?: boolean;
+  title?: string;
+  subtitle?: string;
+}
+
+const {
+  showSearch = true,
+  title = "Find Your Dream Job Today!",
+  subtitle = "connecting Talent with Opportunity: Your Gateway to Career Success",
+} = Astro.props as Props;
+---
+
+<section
+  class="hero-shell w-full flex flex-col items-center text-center pt-20 px-4 bg-linear-to-r from-blue-500 to-blue-400"
+  style={showSearch ? "padding-bottom: 2.5rem;" : "padding-bottom: 4rem;"}
+>
+  <!-- Title -->
+  <h1 class="hero-enter hero-title text-white text-4xl md:text-5xl font-bold">
+    {title}
+  </h1>
+
+  <!-- Subtitle -->
+  <p class="hero-enter hero-subtitle text-white/80 mt-4 max-w-xxl">
+    {subtitle}
+  </p>
+
+  {
+    showSearch ? (
+      <div class="hero-enter hero-search mt-8 w-full max-w-2xl rounded-xl bg-white px-4 py-3 shadow-lg flex items-center gap-3">
+        <Search class="w-6 h-6 text-gray-400" />
+
+        <input
+          type="text"
+          placeholder="Search"
+          class="flex-1 outline-none text-gray-700"
+        />
+
+        <button class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition">
+          Search Job
+        </button>
+      </div>
+    ) : null
+  }
+</section>
+
+<style>
+  .hero-enter {
+    opacity: 0;
+    transform: translateY(20px) scale(0.985);
+    animation: heroReveal 740ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: opacity, transform;
+  }
+
+  .hero-title {
+    animation-delay: 80ms;
+  }
+
+  .hero-subtitle {
+    animation-delay: 200ms;
+  }
+
+  .hero-search {
+    animation-delay: 320ms;
+  }
+
+  .hero-shell {
+    background-size: 140% 140%;
+    animation: heroGradientShift 9s ease-in-out infinite;
+  }
+
+  @keyframes heroReveal {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes heroGradientShift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-enter {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+
+    .hero-shell {
+      animation: none;
+    }
+  }
+</style>
